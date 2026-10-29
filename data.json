@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-29",
+ "updated": "2026-10-29 21:13",
  "posts": [
   {
    "id": "p001",
@@ -2712,5 +2712,13 @@
    "wait": "วันเปิดเทอมที่แน่นอน"
   }
  ],
- "site": {}
+ "site": {
+  "school1": "Master of Design Program",
+  "school2": "Thammasat Design School",
+  "title": "Public Relations Plan",
+  "year": "",
+  "lede": "เริ่มตั้งแต่ ต.ค. 69 ถึงเปิดเทอม ส.ค. 70 ตามประเภทของเนื้อหา อาจมีการปรับเปลี่ยนตามความเหมาะสมตามการเรียนการสอน กิจกรรม และนโยบายส่วนกลาง",
+  "image": "assets/hero-1793283199207.png",
+  "imageAlt": ""
+ }
 }
