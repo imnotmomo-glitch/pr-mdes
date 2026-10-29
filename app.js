@@ -49,7 +49,7 @@ function header(){
  const s=site();
  const cal=[['รุ่น 2.5 (เข้าเรียนภาค 2)','ตอนนี้ ถึง 7 ธ.ค. 69',1],['รุ่น 2.5 เปิดเรียน','4 ม.ค. 70',0],['รุ่น 3 รอบที่ 1','ปลาย เม.ย. ถึง 30 พ.ค. 70',1],['รุ่น 3 รอบที่ 2','สัปดาห์ที่ 2 ของ มิ.ย. ถึง 30 มิ.ย. 70',1],['รุ่น 3 เปิดเทอม','ต้น ส.ค. 70',0]];
  const img=pendingImg?pendingImg.dataUrl:s.image;
- const logo=pendingLogo?pendingLogo.dataUrl:(s.logo||'assets/mdes-logo-white.png');
+ const logo=pendingLogo?pendingLogo.dataUrl:(s.logo||'assets/mdes-logo-white.svg');
  return `<header class="hero"><div class="hero-in">
  <div class="hero-top"><img src="${esc(logo)}" alt="MDES" class="logo"><span class="school">${esc(s.school1)}<br>${esc(s.school2)}</span></div>
  <h1>${esc(s.title)}${s.year?`<br><span class="yr">${esc(s.year)}</span>`:''}</h1>
