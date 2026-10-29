@@ -41,16 +41,30 @@ function counts(list){const c={};STATUSES.forEach(([k])=>c[k]=0);list.forEach(p=
 function bar(list){const c=counts(list),n=list.length||1;return '<div class="bar" role="img" aria-label="สัดส่วนสถานะ">'+STATUSES.map(([k,v])=>c[k]?`<i style="width:${c[k]/n*100}%;background:var(${v})" title="${k} ${c[k]}"></i>`:'').join('')+'</div>';}
 const pill=s=>`<span class="pill" style="color:var(${SCOL[s]||'--s-skip'})">${esc(s)}</span>`;
 
+const SITE_DEF={school1:'Master of Design Program',school2:'Thammasat Design School',title:'แผนประชาสัมพันธ์ MDes',year:'2569–70',lede:'โพสต์ Facebook ตั้งแต่ ต.ค. 69 ถึงเปิดเทอม ส.ค. 70 ประจำทุกอังคาร 19:30 และพฤหัสบดี 12:15 และวันเสาร์ 10:00 สำหรับเรื่องพิเศษ',image:'',imageAlt:''};
+const site=()=>Object.assign({},SITE_DEF,S.site||{});
+let pendingImg=null; // {name,dataUrl,b64}
 function header(){
+ const s=site();
  const cal=[['รุ่น 2.5 (เข้าเรียนภาค 2)','ตอนนี้ ถึง 7 ธ.ค. 69',1],['รุ่น 2.5 เปิดเรียน','4 ม.ค. 70',0],['รุ่น 3 รอบที่ 1','ปลาย เม.ย. ถึง 30 พ.ค. 70',1],['รุ่น 3 รอบที่ 2','สัปดาห์ที่ 2 ของ มิ.ย. ถึง 30 มิ.ย. 70',1],['รุ่น 3 เปิดเทอม','ต้น ส.ค. 70',0]];
+ const img=pendingImg?pendingImg.dataUrl:s.image;
  return `<header class="hero"><div class="hero-in">
- <div class="hero-top"><img src="assets/mdes-logo-white.png" alt="MDES" class="logo" width="895" height="208"><span class="school">Master of Design Program<br>Thammasat Design School</span></div>
- <h1>แผนประชาสัมพันธ์ MDes<br><span class="yr">2569–70</span></h1>
- <p class="lede">โพสต์ Facebook ตั้งแต่ ต.ค. 69 ถึงเปิดเทอม ส.ค. 70 ประจำทุกอังคาร 19:30 และพฤหัสบดี 12:15 และวันเสาร์ 10:00 สำหรับเรื่องพิเศษ</p>
+ <div class="hero-top"><img src="assets/mdes-logo-white.png" alt="MDES" class="logo" width="895" height="208"><span class="school">${esc(s.school1)}<br>${esc(s.school2)}</span></div>
+ <h1>${esc(s.title)}${s.year?`<br><span class="yr">${esc(s.year)}</span>`:''}</h1>
+ <p class="lede">${esc(s.lede)}</p>
  <div class="tools">${ui.canEdit?`<button class="btn ${ui.edit?'lime':'ghost'}" id="editBtn">${ui.edit?'ปิดโหมดแก้ไข':'แก้ไขแผน'}</button>`:''}${ui.edit?'<button class="btn ghost" id="addBtn">+ เพิ่มโพสต์</button>':''}<button class="btn ghost" id="xlsBtn">ดาวน์โหลด Excel</button></div>
- <div class="shape" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+ ${img?`<img class="hero-img" src="${esc(img)}" alt="${esc(s.imageAlt)}">`:'<div class="shape" aria-hidden="true"><i></i><i></i><i></i><i></i></div>'}
  </div></header>
+ ${ui.edit?siteForm(s):''}
  <div class="wrap"><section class="cal" aria-label="ปฏิทินรับสมัคร">${cal.map(c=>`<div class="${c[2]?'open':''}">${c[2]?'<span class="flag">เปิดรับสมัคร</span>':''}<b>${c[0]}</b><span>${c[1]}</span></div>`).join('')}</section></div>`;
+}
+function siteForm(s){
+ const f=(k,l,ta)=>`<label for="site-${k}">${l}${ta?`<textarea id="site-${k}" data-site="${k}" rows="2">${esc(s[k])}</textarea>`:`<input id="site-${k}" data-site="${k}" value="${esc(s[k])}">`}</label>`;
+ return `<div class="wrap" style="padding-bottom:0"><section class="edit sitebox" aria-labelledby="sfh"><div class="eyebrow" id="sfh">แก้ไขหัวเว็บ</div>
+ <div class="row">${f('title','หัวเรื่อง')}${f('year','ข้อความในแถบสีเขียว (เว้นว่างได้)')}${f('school2','ชื่อคณะ / หน่วยงาน')}</div>
+ ${f('school1','บรรทัดบนข้างโลโก้')}${f('lede','คำอธิบายใต้หัวเรื่อง',1)}
+ <div class="row"><label for="site-file">รูปด้านขวาแทนกราฟิก (JPG/PNG/WebP ไม่เกิน 3 MB)<input id="site-file" type="file" accept="image/png,image/jpeg,image/webp"></label>${f('imageAlt','คำอธิบายรูป (สำหรับผู้ใช้โปรแกรมอ่านหน้าจอ)')}<label>&nbsp;<button class="btn" id="imgClear" ${(s.image||pendingImg)?'':'disabled'}>ใช้กราฟิกเดิมแทนรูป</button></label></div>
+ <div class="editnote">ดูผลได้ทันทีด้านบน กด "บันทึก" ด้านล่างเพื่อให้ทุกคนเห็น</div></section></div>`;
 }
 function summary(){
  const L=live(),c=counts(L),total=L.length;
@@ -68,6 +82,29 @@ function nextUp(){
  const end=new Date(pd(TODAY).getTime()+13*864e5).toISOString().slice(0,10);
  const l=sorted().filter(p=>p.date>=TODAY&&p.date<=end&&p.status!=='เลื่อน/ยกเลิก');
  return `<section class="next" aria-labelledby="nxh"><h2 id="nxh">2 สัปดาห์ข้างหน้า</h2>${l.length?l.map(p=>`<button class="nx ${p.date===TODAY?'today':''}" data-go="${p.id}"><span class="when"><b>${dow(p.date)} ${fd(p.date)}</b>${esc(p.time)}${p.date===TODAY?' · <mark>วันนี้</mark>':''}</span><span class="tt">${esc(p.title)}<div class="muted" style="font-weight:400;font-size:13px">${esc(p.series)}</div></span>${pill(p.status)}</button>`).join(''):'<div class="muted">ไม่มีโพสต์ในช่วงนี้</div>'}</section>`;
+}
+const SCOLORS={'รับสมัคร':'#e6fd52','รู้จัก MDes':'#1c22a7','ทำไมต้อง MDes':'#3c8ddd','รายวิชา':'#0e1154','ถาม-ตอบ':'#9ac7ef','งานวิจัย IS':'#7a4fd6','บรรยากาศการเรียน':'#f26522','เครื่องมือดิจิทัล':'#139c9c','คนของ MDes':'#d6457a','ผลงานนักศึกษา':'#f2a900','เส้นทางอาชีพ':'#6b7785'};
+const scol=s=>SCOLORS[s]||'#a3a7b3';
+const OPEN=[['2026-10-26','2026-12-07'],['2027-04-26','2027-05-30'],['2027-06-07','2027-06-30']];
+function overview(){
+ const by={};S.posts.filter(p=>p.status!=='เลื่อน/ยกเลิก').forEach(p=>{(by[p.date]=by[p.date]||[]).push(p);});
+ const months=[];for(let y=2026,m=9;y<2027||m<=7;){months.push([y,m]);m++;if(m>11){m=0;y++;}}
+ const series=[...new Set(sorted().map(p=>p.series))];
+ const days=[...Array(31)].map((_,i)=>i+1);
+ const rows=months.map(([y,m])=>{const n=new Date(Date.UTC(y,m+1,0)).getUTCDate();
+  const cells=days.map(d=>{if(d>n)return '<td class="na"></td>';
+   const k=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const ps=by[k]||[];
+   const wd=new Date(Date.UTC(y,m,d)).getUTCDay();const open=OPEN.some(([a,b])=>k>=a&&k<=b);
+   const cls=[open?'op':'',wd===0||wd===6?'we':'',k===TODAY?'td':''].join(' ');
+   if(!ps.length)return `<td class="${cls}" title="${TH_D[wd]} ${fd(k,1)}"></td>`;
+   const dim=ui.series&&!ps.some(p=>p.series===ui.series);
+   return `<td class="${cls}"><button class="dot2 ${dim?'dim':''}" data-go="${ps[0].id}" title="${esc(TH_D[wd]+' '+fd(k,1)+' · '+ps.map(p=>p.series+': '+p.title).join(' / '))}" style="--c:${scol(ps[0].series)}">${ps.length>1?'<span class="two" style="--c2:'+scol(ps[1].series)+'"></span>':''}<span class="sr">${esc(ps.map(p=>p.title).join(', '))}</span></button></td>`;}).join('');
+  const cnt=Object.keys(by).filter(k=>k.startsWith(`${y}-${String(m+1).padStart(2,'0')}`)).reduce((a,k)=>a+by[k].length,0);
+  return `<tr><th scope="row">${TH_M[m]} ${String(y+543).slice(2)}<small>${cnt}</small></th>${cells}</tr>`;}).join('');
+ return `<section class="overview" aria-labelledby="ovh"><div><h2 id="ovh">ปฏิทินภาพรวม ต.ค. 69 – ส.ค. 70</h2><div class="muted" style="font-size:14px">หนึ่งแถวคือหนึ่งเดือน หนึ่งช่องคือหนึ่งวัน สีบอกหมวดของโพสต์ แถบเขียวอ่อนคือช่วงเปิดรับสมัคร กดที่จุดเพื่อดูโพสต์นั้น กดชื่อหมวดเพื่อดูเฉพาะหมวด</div></div>
+ <div class="filters">${series.map(s=>`<button class="chip leg ${ui.series===s?'on':''}" data-series="${ui.series===s?'':esc(s)}"><i class="dot" style="background:${scol(s)}"></i>${esc(s)}</button>`).join('')}</div>
+ <div class="ovscroll"><table class="ov"><thead><tr><th></th>${days.map(d=>`<th scope="col">${d}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+ <div class="legend"><span><i class="sw op"></i>ช่วงเปิดรับสมัคร</span><span><i class="sw we"></i>เสาร์-อาทิตย์</span><span><i class="sw td"></i>วันนี้</span><span><i class="sw two2"></i>วันที่มี 2 โพสต์</span></div></section>`;
 }
 function courses(){
  const by={};S.posts.forEach(p=>{if(p.course)by[p.course]=p;});
@@ -137,9 +174,9 @@ function plan(){
 function render(){
  const fid=document.activeElement&&document.activeElement.id;
  const pos=fid&&document.activeElement.selectionStart;
- $('root').innerHTML=`${header()}<div class="wrap">${ui.restore?`<div class="banner"><span>มีการแก้ไขที่ยังไม่ได้บันทึกจากครั้งก่อน</span><span class="tools"><button class="btn small primary" id="restoreBtn">กู้คืน</button><button class="btn small" id="dropBtn">ทิ้ง</button></span></div>`:''}${summary()}${nextUp()}${courses()}${plan()}
+ $('root').innerHTML=`${header()}<div class="wrap">${ui.restore?`<div class="banner"><span>มีการแก้ไขที่ยังไม่ได้บันทึกจากครั้งก่อน</span><span class="tools"><button class="btn small primary" id="restoreBtn">กู้คืน</button><button class="btn small" id="dropBtn">ทิ้ง</button></span></div>`:''}${summary()}${nextUp()}${overview()}${courses()}${plan()}
  <footer><span>อัปเดตล่าสุด ${esc(fd(S.updated.slice(0,10),1))}${S.updated.length>10?' '+esc(S.updated.slice(11,16))+' น.':''} · วันและเวลาโพสต์เป็นข้อเสนอเริ่มต้น จะปรับตามสถิติเพจเมื่อมีข้อมูล · ข้อมูลรับสมัคร (ช่องทาง ค่าใช้จ่าย) จะใส่เมื่อหลักสูตรประกาศ</span><button class="linkbtn" id="adminBtn">${ui.canEdit?'ออกจากระบบผู้ดูแล':'สำหรับผู้ดูแล'}</button></footer>${ui.login?loginBox():''}</div>
- ${ui.dirty.size?`<div class="savebar"><span>แก้ไขแล้ว ${ui.dirty.size} โพสต์ ยังไม่ได้บันทึก</span><button class="btn lime" id="saveBtn" ${ui.saving?'disabled':''}>${ui.saving?'กำลังบันทึก…':'บันทึก'}</button><button class="btn" id="undoBtn">ยกเลิกการแก้ไข</button></div>`:''}`;
+ ${ui.dirty.size?`<div class="savebar"><span>แก้ไขแล้ว ${[...ui.dirty].filter(x=>x!=='__site').length?[...ui.dirty].filter(x=>x!=='__site').length+' โพสต์':''}${ui.dirty.has('__site')?([...ui.dirty].length>1?' และ':'')+'หัวเว็บ':''} ยังไม่ได้บันทึก</span><button class="btn lime" id="saveBtn" ${ui.saving?'disabled':''}>${ui.saving?'กำลังบันทึก…':'บันทึก'}</button><button class="btn" id="undoBtn">ยกเลิกการแก้ไข</button></div>`:''}`;
  if(fid&&$(fid)){$(fid).focus();try{if(pos!=null)$(fid).setSelectionRange(pos,pos);}catch(e){}}
 }
 function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),3200);}
@@ -164,10 +201,11 @@ document.addEventListener('click',async e=>{
  if(t.dataset.copy){const txt=find(t.dataset.copy).draft.caption;try{await navigator.clipboard.writeText(txt);toast('คัดลอก caption แล้ว');}catch(err){const pre=$('cap-'+t.dataset.copy);const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r);toast('เลือกข้อความไว้แล้ว กดคัดลอกได้เลย');}return;}
  if(t.id==='editBtn'){ui.edit=!ui.edit;render();return;}
  if(t.id==='addBtn'){const d=TODAY>'2027-07-31'?'2027-07-31':TODAY;const p={id:'n'+Date.now().toString(36),date:d,time:'10:00',special:true,phase:phaseOf(d),status:'เตรียม',owner:'',link:'',note:'',course:'',credits:'',draft:null,series:'บรรยากาศการเรียน',title:'โพสต์ใหม่',subtitle:'',summary:'',message:'',format:'',wait:''};S.posts.push(p);ui.dirty.add(p.id);ui.open.add(p.id);ui.series='';ui.phase=0;ui.q='';stash();render();const c=$('card-'+p.id);if(c){c.scrollIntoView({block:'start'});const i=$('f-'+p.id+'-title');if(i)i.focus();}return;}
- if(t.id==='undoBtn'){S=JSON.parse(ORIGINAL);ui.dirty.clear();unstash();render();toast('ยกเลิกการแก้ไขแล้ว');return;}
+ if(t.id==='undoBtn'){pendingImg=null;S=JSON.parse(ORIGINAL);ui.dirty.clear();unstash();render();toast('ยกเลิกการแก้ไขแล้ว');return;}
  if(t.id==='restoreBtn'){S=JSON.parse(ui.restore);ui.restore=null;ui.dirty=new Set(S.posts.map(p=>p.id));ui.edit=true;render();return;}
  if(t.id==='dropBtn'){ui.restore=null;unstash();render();return;}
  if(t.id==='saveBtn'){save();return;}
+ if(t.id==='imgClear'){pendingImg=null;S.site=Object.assign({},site(),{image:''});ui.dirty.add('__site');render();return;}
  if(t.id==='adminBtn'){if(ui.canEdit){try{localStorage.removeItem(TK);}catch(e){}ui.canEdit=false;ui.edit=false;render();toast('ออกจากระบบผู้ดูแลแล้ว');}else{ui.login=true;render();const i=$('tok');if(i)i.focus();}return;}
  if(t.id==='tokCancel'){ui.login=false;render();return;}
  if(t.id==='tokSave'){checkToken($('tok').value.trim());return;}
@@ -175,9 +213,11 @@ document.addEventListener('click',async e=>{
 });
 document.addEventListener('input',e=>{const el=e.target;
  if(el.id==='q'){ui.q=el.value;render();return;}
+ if(el.dataset.site){S.site=Object.assign({},site(),{[el.dataset.site]:el.value});const had=ui.dirty.has('__site');ui.dirty.add('__site');stash();if(!had||true)render();return;}
  if(el.dataset.f&&el.dataset.id){setField(find(el.dataset.id),el.dataset.f,el.value);if(ui.dirty.size===1&&!document.querySelector('.savebar'))render();}
 });
-document.addEventListener('change',e=>{const el=e.target;if(el.dataset.f&&['status','date','time','special','series'].includes(el.dataset.f)){const p=find(el.dataset.id);setField(p,el.dataset.f,el.value);if(el.dataset.f==='date')p.phase=phaseOf(p.date);render();}});
+document.addEventListener('change',e=>{const el=e.target;
+ if(el.id==='site-file'&&el.files&&el.files[0]){const f=el.files[0];if(f.size>3*1024*1024){toast('รูปใหญ่เกิน 3 MB ลดขนาดก่อนนะครับ');el.value='';return;}const ext=(f.type.split('/')[1]||'png').replace('jpeg','jpg');const rd=new FileReader();rd.onload=()=>{const u=rd.result;pendingImg={name:'assets/hero-'+Date.now()+'.'+ext,dataUrl:u,b64:u.split(',')[1]};ui.dirty.add('__site');render();toast('ใส่รูปแล้ว กดบันทึกเพื่อให้ทุกคนเห็น');};rd.readAsDataURL(f);return;}if(el.dataset.f&&['status','date','time','special','series'].includes(el.dataset.f)){const p=find(el.dataset.id);setField(p,el.dataset.f,el.value);if(el.dataset.f==='date')p.phase=phaseOf(p.date);render();}});
 
 function loginBox(){return `<div class="login" role="dialog" aria-labelledby="lgh"><h3 id="lgh">เข้าสู่โหมดผู้ดูแล</h3><p class="muted">ใส่ GitHub token ของบัญชีที่ดูแลเว็บนี้ ระบบจะจำไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ผู้ที่ไม่มี token ดูได้อย่างเดียว</p><label for="tok">GitHub token<input id="tok" type="password" autocomplete="off" placeholder="github_pat_..."></label><div class="tools"><button class="btn primary" id="tokSave">เข้าสู่ระบบ</button><button class="btn" id="tokCancel">ยกเลิก</button></div></div>`;}
 const api=(p,o={})=>fetch('https://api.github.com/repos/'+REPO.owner+'/'+REPO.repo+p,{...o,headers:{'Accept':'application/vnd.github+json','Authorization':'Bearer '+getTok(),...(o.headers||{})}});
@@ -196,13 +236,14 @@ async function save(){
  const d=new Date(Date.now()+7*36e5).toISOString();S.updated=d.slice(0,10)+' '+d.slice(11,16);
  ui.saving=true;render();stash();
  try{
+  if(pendingImg){const ri=await api('/contents/'+pendingImg.name,{method:'PUT',body:JSON.stringify({message:'อัปโหลดรูปหัวเว็บ',content:pendingImg.b64,branch:REPO.branch})});if(!ri.ok)throw new Error('image '+ri.status);S.site=Object.assign({},site(),{image:pendingImg.name});}
   const g=await api('/contents/'+REPO.path+'?ref='+REPO.branch);
   if(!g.ok)throw new Error('read '+g.status);
   const cur=await g.json();
   const body=JSON.stringify(S,null,1);
   const r=await api('/contents/'+REPO.path,{method:'PUT',body:JSON.stringify({message:'อัปเดตแผนโพสต์ '+S.updated,content:b64(body),sha:cur.sha,branch:REPO.branch})});
   if(!r.ok)throw new Error('write '+r.status);
-  ORIGINAL=JSON.stringify(S);ui.dirty.clear();ui.saving=false;unstash();render();
+  pendingImg=null;ORIGINAL=JSON.stringify(S);ui.dirty.clear();ui.saving=false;unstash();render();
   toast('บันทึกแล้ว เว็บจะแสดงข้อมูลใหม่กับทุกคนภายใน 1-2 นาที');
  }catch(err){ui.saving=false;render();
   toast(/401|403/.test(err.message)?'token หมดอายุหรือไม่มีสิทธิ์ เข้าสู่ระบบใหม่':'บันทึกไม่สำเร็จ ('+err.message+') การแก้ไขยังอยู่ในหน้านี้ ลองอีกครั้ง');}
