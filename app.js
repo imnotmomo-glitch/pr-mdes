@@ -41,18 +41,20 @@ function counts(list){const c={};STATUSES.forEach(([k])=>c[k]=0);list.forEach(p=
 function bar(list){const c=counts(list),n=list.length||1;return '<div class="bar" role="img" aria-label="สัดส่วนสถานะ">'+STATUSES.map(([k,v])=>c[k]?`<i style="width:${c[k]/n*100}%;background:var(${v})" title="${k} ${c[k]}"></i>`:'').join('')+'</div>';}
 const pill=s=>`<span class="pill" style="color:var(${SCOL[s]||'--s-skip'})">${esc(s)}</span>`;
 
-const SITE_DEF={school1:'Master of Design Program',school2:'Thammasat Design School',title:'แผนประชาสัมพันธ์ MDes',year:'2569–70',lede:'โพสต์ Facebook ตั้งแต่ ต.ค. 69 ถึงเปิดเทอม ส.ค. 70 ประจำทุกอังคาร 19:30 และพฤหัสบดี 12:15 และวันเสาร์ 10:00 สำหรับเรื่องพิเศษ',image:'',imageAlt:''};
+const SITE_DEF={school1:'Master of Design Program',school2:'Thammasat Design School',title:'แผนประชาสัมพันธ์ MDes',year:'2569–70',lede:'โพสต์ Facebook ตั้งแต่ ต.ค. 69 ถึงเปิดเทอม ส.ค. 70 ประจำทุกอังคาร 19:30 และพฤหัสบดี 12:15 และวันเสาร์ 10:00 สำหรับเรื่องพิเศษ',image:'',imageAlt:'',logo:''};
 const site=()=>Object.assign({},SITE_DEF,S.site||{});
 let pendingImg=null; // {name,dataUrl,b64}
+let pendingLogo=null; // same shape, replaces the MDES logo
 function header(){
  const s=site();
  const cal=[['รุ่น 2.5 (เข้าเรียนภาค 2)','ตอนนี้ ถึง 7 ธ.ค. 69',1],['รุ่น 2.5 เปิดเรียน','4 ม.ค. 70',0],['รุ่น 3 รอบที่ 1','ปลาย เม.ย. ถึง 30 พ.ค. 70',1],['รุ่น 3 รอบที่ 2','สัปดาห์ที่ 2 ของ มิ.ย. ถึง 30 มิ.ย. 70',1],['รุ่น 3 เปิดเทอม','ต้น ส.ค. 70',0]];
  const img=pendingImg?pendingImg.dataUrl:s.image;
+ const logo=pendingLogo?pendingLogo.dataUrl:(s.logo||'assets/mdes-logo-white.png');
  return `<header class="hero"><div class="hero-in">
- <div class="hero-top"><img src="assets/mdes-logo-white.png" alt="MDES" class="logo" width="895" height="208"><span class="school">${esc(s.school1)}<br>${esc(s.school2)}</span></div>
+ <div class="hero-top"><img src="${esc(logo)}" alt="MDES" class="logo"><span class="school">${esc(s.school1)}<br>${esc(s.school2)}</span></div>
  <h1>${esc(s.title)}${s.year?`<br><span class="yr">${esc(s.year)}</span>`:''}</h1>
  <p class="lede">${esc(s.lede)}</p>
- <div class="tools">${ui.canEdit?`<button class="btn ${ui.edit?'lime':'ghost'}" id="editBtn">${ui.edit?'ปิดโหมดแก้ไข':'แก้ไขแผน'}</button>`:''}${ui.edit?'<button class="btn ghost" id="addBtn">+ เพิ่มโพสต์</button>':''}<button class="btn ghost" id="xlsBtn">ดาวน์โหลด Excel</button></div>
+ <div class="tools">${ui.canEdit?`<button class="btn ${ui.edit?'lime':'ghost'}" id="editBtn">${ui.edit?'ปิดโหมดแก้ไข':'แก้ไขแผน'}</button>`:''}${ui.edit?'<button class="btn ghost" id="addBtn">+ เพิ่มโพสต์</button>':''}${ui.canEdit?'<button class="btn ghost" id="xlsBtn">ดาวน์โหลด Excel</button>':''}</div>
  ${img?`<img class="hero-img" src="${esc(img)}" alt="${esc(s.imageAlt)}">`:'<div class="shape" aria-hidden="true"><i></i><i></i><i></i><i></i></div>'}
  </div></header>
  ${ui.edit?siteForm(s):''}
@@ -64,6 +66,7 @@ function siteForm(s){
  <div class="row">${f('title','หัวเรื่อง')}${f('year','ข้อความในแถบสีเขียว (เว้นว่างได้)')}${f('school2','ชื่อคณะ / หน่วยงาน')}</div>
  ${f('school1','บรรทัดบนข้างโลโก้')}${f('lede','คำอธิบายใต้หัวเรื่อง',1)}
  <div class="row"><label for="site-file">รูปด้านขวาแทนกราฟิก (JPG/PNG/WebP ไม่เกิน 3 MB)<input id="site-file" type="file" accept="image/png,image/jpeg,image/webp"></label>${f('imageAlt','คำอธิบายรูป (สำหรับผู้ใช้โปรแกรมอ่านหน้าจอ)')}<label>&nbsp;<button class="btn" id="imgClear" ${(s.image||pendingImg)?'':'disabled'}>ใช้กราฟิกเดิมแทนรูป</button></label></div>
+ <div class="row"><label for="logo-file">โลโก้ MDES สีขาวบนพื้นน้ำเงิน (SVG หรือ PNG พื้นใส ไม่เกิน 3 MB)<input id="logo-file" type="file" accept="image/svg+xml,image/png,image/webp"></label><label>&nbsp;<button class="btn" id="logoClear" ${(s.logo||pendingLogo)?'':'disabled'}>ใช้โลโก้เดิม</button></label></div>
  <div class="editnote">ดูผลได้ทันทีด้านบน กด "บันทึก" ด้านล่างเพื่อให้ทุกคนเห็น</div></section></div>`;
 }
 function summary(){
@@ -201,10 +204,11 @@ document.addEventListener('click',async e=>{
  if(t.dataset.copy){const txt=find(t.dataset.copy).draft.caption;try{await navigator.clipboard.writeText(txt);toast('คัดลอก caption แล้ว');}catch(err){const pre=$('cap-'+t.dataset.copy);const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r);toast('เลือกข้อความไว้แล้ว กดคัดลอกได้เลย');}return;}
  if(t.id==='editBtn'){ui.edit=!ui.edit;render();return;}
  if(t.id==='addBtn'){const d=TODAY>'2027-07-31'?'2027-07-31':TODAY;const p={id:'n'+Date.now().toString(36),date:d,time:'10:00',special:true,phase:phaseOf(d),status:'เตรียม',owner:'',link:'',note:'',course:'',credits:'',draft:null,series:'บรรยากาศการเรียน',title:'โพสต์ใหม่',subtitle:'',summary:'',message:'',format:'',wait:''};S.posts.push(p);ui.dirty.add(p.id);ui.open.add(p.id);ui.series='';ui.phase=0;ui.q='';stash();render();const c=$('card-'+p.id);if(c){c.scrollIntoView({block:'start'});const i=$('f-'+p.id+'-title');if(i)i.focus();}return;}
- if(t.id==='undoBtn'){pendingImg=null;S=JSON.parse(ORIGINAL);ui.dirty.clear();unstash();render();toast('ยกเลิกการแก้ไขแล้ว');return;}
+ if(t.id==='undoBtn'){pendingImg=null;pendingLogo=null;S=JSON.parse(ORIGINAL);ui.dirty.clear();unstash();render();toast('ยกเลิกการแก้ไขแล้ว');return;}
  if(t.id==='restoreBtn'){S=JSON.parse(ui.restore);ui.restore=null;ui.dirty=new Set(S.posts.map(p=>p.id));ui.edit=true;render();return;}
  if(t.id==='dropBtn'){ui.restore=null;unstash();render();return;}
  if(t.id==='saveBtn'){save();return;}
+ if(t.id==='logoClear'){pendingLogo=null;S.site=Object.assign({},site(),{logo:''});ui.dirty.add('__site');render();return;}
  if(t.id==='imgClear'){pendingImg=null;S.site=Object.assign({},site(),{image:''});ui.dirty.add('__site');render();return;}
  if(t.id==='adminBtn'){if(ui.canEdit){try{localStorage.removeItem(TK);}catch(e){}ui.canEdit=false;ui.edit=false;render();toast('ออกจากระบบผู้ดูแลแล้ว');}else{ui.login=true;render();const i=$('tok');if(i)i.focus();}return;}
  if(t.id==='tokCancel'){ui.login=false;render();return;}
@@ -217,6 +221,7 @@ document.addEventListener('input',e=>{const el=e.target;
  if(el.dataset.f&&el.dataset.id){setField(find(el.dataset.id),el.dataset.f,el.value);if(ui.dirty.size===1&&!document.querySelector('.savebar'))render();}
 });
 document.addEventListener('change',e=>{const el=e.target;
+ if(el.id==='logo-file'&&el.files&&el.files[0]){const f=el.files[0];if(f.size>3*1024*1024){toast('ไฟล์ใหญ่เกิน 3 MB ลดขนาดก่อนนะครับ');el.value='';return;}const ext=f.type==='image/svg+xml'?'svg':(f.type.split('/')[1]||'png');const rd=new FileReader();rd.onload=()=>{const u=rd.result;pendingLogo={name:'assets/logo-'+Date.now()+'.'+ext,dataUrl:u,b64:u.split(',')[1]};ui.dirty.add('__site');render();toast('ใส่โลโก้แล้ว กดบันทึกเพื่อให้ทุกคนเห็น');};rd.readAsDataURL(f);return;}
  if(el.id==='site-file'&&el.files&&el.files[0]){const f=el.files[0];if(f.size>3*1024*1024){toast('รูปใหญ่เกิน 3 MB ลดขนาดก่อนนะครับ');el.value='';return;}const ext=(f.type.split('/')[1]||'png').replace('jpeg','jpg');const rd=new FileReader();rd.onload=()=>{const u=rd.result;pendingImg={name:'assets/hero-'+Date.now()+'.'+ext,dataUrl:u,b64:u.split(',')[1]};ui.dirty.add('__site');render();toast('ใส่รูปแล้ว กดบันทึกเพื่อให้ทุกคนเห็น');};rd.readAsDataURL(f);return;}if(el.dataset.f&&['status','date','time','special','series'].includes(el.dataset.f)){const p=find(el.dataset.id);setField(p,el.dataset.f,el.value);if(el.dataset.f==='date')p.phase=phaseOf(p.date);render();}});
 
 function loginBox(){return `<div class="login" role="dialog" aria-labelledby="lgh"><h3 id="lgh">เข้าสู่โหมดผู้ดูแล</h3><p class="muted">ใส่ GitHub token ของบัญชีที่ดูแลเว็บนี้ ระบบจะจำไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ผู้ที่ไม่มี token ดูได้อย่างเดียว</p><label for="tok">GitHub token<input id="tok" type="password" autocomplete="off" placeholder="github_pat_..."></label><div class="tools"><button class="btn primary" id="tokSave">เข้าสู่ระบบ</button><button class="btn" id="tokCancel">ยกเลิก</button></div></div>`;}
@@ -236,6 +241,7 @@ async function save(){
  const d=new Date(Date.now()+7*36e5).toISOString();S.updated=d.slice(0,10)+' '+d.slice(11,16);
  ui.saving=true;render();stash();
  try{
+  if(pendingLogo){const rl=await api('/contents/'+pendingLogo.name,{method:'PUT',body:JSON.stringify({message:'อัปโหลดโลโก้',content:pendingLogo.b64,branch:REPO.branch})});if(!rl.ok)throw new Error('logo '+rl.status);S.site=Object.assign({},site(),{logo:pendingLogo.name});}
   if(pendingImg){const ri=await api('/contents/'+pendingImg.name,{method:'PUT',body:JSON.stringify({message:'อัปโหลดรูปหัวเว็บ',content:pendingImg.b64,branch:REPO.branch})});if(!ri.ok)throw new Error('image '+ri.status);S.site=Object.assign({},site(),{image:pendingImg.name});}
   const g=await api('/contents/'+REPO.path+'?ref='+REPO.branch);
   if(!g.ok)throw new Error('read '+g.status);
@@ -243,7 +249,7 @@ async function save(){
   const body=JSON.stringify(S,null,1);
   const r=await api('/contents/'+REPO.path,{method:'PUT',body:JSON.stringify({message:'อัปเดตแผนโพสต์ '+S.updated,content:b64(body),sha:cur.sha,branch:REPO.branch})});
   if(!r.ok)throw new Error('write '+r.status);
-  pendingImg=null;ORIGINAL=JSON.stringify(S);ui.dirty.clear();ui.saving=false;unstash();render();
+  pendingImg=null;pendingLogo=null;ORIGINAL=JSON.stringify(S);ui.dirty.clear();ui.saving=false;unstash();render();
   toast('บันทึกแล้ว เว็บจะแสดงข้อมูลใหม่กับทุกคนภายใน 1-2 นาที');
  }catch(err){ui.saving=false;render();
   toast(/401|403/.test(err.message)?'token หมดอายุหรือไม่มีสิทธิ์ เข้าสู่ระบบใหม่':'บันทึกไม่สำเร็จ ('+err.message+') การแก้ไขยังอยู่ในหน้านี้ ลองอีกครั้ง');}
