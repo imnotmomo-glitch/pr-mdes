@@ -263,7 +263,10 @@ async function boot(){
  try{const r=await fetch('data.json?v='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;const j=await r.json();ORIGINAL=JSON.stringify(j);S=j;}
  catch(e){$('root').innerHTML='<div class="wrap"><p>โหลดข้อมูลแผนไม่ได้ ลองรีเฟรชหน้าอีกครั้ง</p></div>';return;}
  try{const st=sessionStorage.getItem('mdes-unsaved');if(st&&st!==ORIGINAL)ui.restore=st;}catch(e){}
+ if(location.hash==='#admin'&&!ui.canEdit)ui.login=true;
  render();
+ if(ui.login){const i=$('tok');if(i){i.scrollIntoView({block:'center'});i.focus();}}
 }
+window.addEventListener('hashchange',()=>{if(location.hash==='#admin'&&!ui.canEdit){ui.login=true;render();const i=$('tok');if(i){i.scrollIntoView({block:'center'});i.focus();}}});
 boot();
 })();
